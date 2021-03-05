@@ -9,15 +9,30 @@ namespace RotMGServerChanger {
     static class Program {
 
         private static ConsoleColor DefaultConsoleColor;
+
+        private static String[] prodServers = {
+            "USWest", "USWest2", "USWest3", "USWest4",
+            "USSouth", "USSouth2", "USSouth3", "USSouthWest",
+            "USNorthWest", "USMidWest", "USMidWest2",
+            "USEast", "USEast2", "USEast3", "USEast4",
+            "EUWest", "EUWest2",
+            "EUSouthWest", "EUSouth", "EUNorth", "EUNorth2",
+            "EUEast", "EUEast2",
+            "Australia", "AsiaSouthEast", "AsiaEast"
+        };
+        
+        private static String[] testingServers = {
+            "USEastT1", "EUWestT1", "AsiaSouthEastT1",
+        };
         
         private static void Main(string[] args){
             DefaultConsoleColor = Console.ForegroundColor;
             bool isProd = IsServerProd();
-            List<string> servers = GetAllServers(isProd);
+            String[] servers = GetAllServers(isProd);
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("Available Servers:");
             Console.ForegroundColor = ConsoleColor.Green;
-            for (int i = 0; i < servers.Count; i++) {
+            for (int i = 0; i < servers.Length; i++) {
                 Console.WriteLine($"{i+1}. {servers[i]}");
             }
             Console.ForegroundColor = DefaultConsoleColor;
@@ -38,23 +53,10 @@ namespace RotMGServerChanger {
             Console.ReadLine();
         }
         
-        private static List<string> GetAllServers(bool prod){
-            XmlDocument doc = new XmlDocument();
-            string baseUrl = prod ? "realmofthemadgodhrd" : "rotmgtesting";
-            doc.Load($"http://{baseUrl}.appspot.com/char/list");
-            doc.Normalize();
-            XmlElement serversElem = doc.DocumentElement.GetChildElement("Servers");
-            List<string> servers = new List<string>();
-            foreach (XmlNode docChildNode in serversElem.ChildNodes) {
-                if (docChildNode is XmlElement elem) {
-                    if (elem.Name == "Server") {
-                        servers.Add(GetServerName(elem));
-                    }
-                }
-            }
-            return servers;
+        private static String[] GetAllServers(bool prod){
+            return prod ? prodServers : testingServers;
         }
-
+        
         private static string GetServerName(XmlElement elem){
             return GetChildElement(elem, "Name").InnerText;
         }
@@ -86,11 +88,11 @@ namespace RotMGServerChanger {
             return ret;
         }
         
-        private static string GetValidServer(List<string> servers){
-            Console.Write($"What server do you want to set (1-{servers.Count})? ");
+        private static string GetValidServer(String[] servers){
+            Console.Write($"What server do you want to set (1-{servers.Length})? ");
             string val = Console.ReadLine();
             if (!string.IsNullOrEmpty(val) && Int32.TryParse(val, out int serverId)) {
-                if (serverId > 0 && serverId <= servers.Count) {
+                if (serverId > 0 && serverId <= servers.Length) {
                     string server = servers[serverId - 1];
                     Console.Write("Setting server to ");
                     Console.ForegroundColor = ConsoleColor.Cyan;
